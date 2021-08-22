@@ -1,0 +1,49 @@
+version: '3.4'
+
+networks:
+  project:
+
+services:
+  project_app:
+    build: 
+        context: .
+    container_name: project_app
+    working_dir: /var/www/html/
+    depends_on:
+      - project_database
+    volumes:
+      - ./app/:/var/www/html/
+    ports:
+      - "8009:80"
+    stdin_open: true
+    tty: true
+    networks:
+      - project
+  
+  project_database:
+    image: mysql:latest
+    container_name: project_database
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: project
+    ports:
+      - "3009:3306"
+    networks:
+      - project
+    restart: always
+    volumes:
+      - ./project_database/:/var/lib/mysql
+
+  project_phpmyadmin:
+    image: phpmyadmin:latest
+    restart: always
+    container_name: project_phpmyadmin
+    depends_on:
+      - project_database
+    ports:
+      - "1009:80"
+    environment:
+      PMA_HOST: project_database
+      MYSQL_ROOT_PASSWORD: secret
+    networks:
+      - project
